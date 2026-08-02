@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理 | 华夏鑫荣（河北）挤塑价格表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F3A76',
+                        light: '#F3F7FC'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-light min-h-screen p-4 md:p-8">
+    <div class="max-w-5xl mx-auto">
+        <!-- 登录区域 -->
+        <div id="loginBox" class="bg-white rounded-lg p-8 shadow-lg max-w-md mx-auto mt-20">
+            <h2 class="text-xl font-bold text-primary mb-6 text-center">价格表后台登录</h2>
+            <div class="mb-4">
+                <label class="block mb-2 text-gray-700">管理密码</label>
+                <input id="pwdInput" type="password" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-primary">
+            </div>
+            <button onclick="login()" class="w-full bg-primary text-white py-2.5 rounded hover:opacity-90">登录后台</button>
+            <p class="text-red-500 text-sm mt-3 hidden" id="errTip">密码错误！</p>
+            <a href="index.html" class="block text-center mt-4 text-primary">← 返回价格表前台</a>
+        </div>
+
+        <!-- 管理面板（登录后显示） -->
+        <div id="adminPanel" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-xl font-bold text-primary">价格数据管理后台</h1>
+                <div>
+                    <a href="index.html" class="text-primary mr-4">查看前台</a>
+                    <button onclick="logout()" class="text-red-500">退出登录</button>
+                </div>
+            </div>
+            <div class="bg-amber-100 border border-amber-400 p-4 rounded mb-6">
+                <p><i class="fa fa-info-circle text-amber-600"></i> 修改价格完成后点击【导出data.json】，将下载得到的文件上传至Github仓库覆盖原文件，全网页面刷新即可同步最新价格。</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-5 mb-6">
+                <label class="font-semibold block mb-2">最后更新日期（格式：2026-08-02）</label>
+                <input class="border px-3 py-2 w-full" id="inputUpdateTime">
+            </div>
+
+            <!-- B1编辑 -->
+            <div class="bg-white rounded-lg shadow p-5 mb-6">
+                <h3 class="font-bold text-lg mb-4 text-primary">B1级价格设置</h3>
+                <div id="editB1" class="grid grid-cols-2 gap-3"></div>
+            </div>
+            <!-- B2编辑 -->
+            <div class="bg-white rounded-lg shadow p-5 mb-6">
+                <h3 class="font-bold text-lg mb-4 text-primary">B2级价格设置</h3>
+                <div id="editB2" class="grid grid-cols-2 gap-3"></div>
+            </div>
+            <!-- 检测级编辑 -->
+            <div class="bg-white rounded-lg shadow p-5 mb-6">
+                <h3 class="font-bold text-lg mb-4 text-primary">检测级价格设置</h3>
+                <div id="editTest" class="grid grid-cols-2 gap-3"></div>
+            </div>
+            <!-- 加价备注 -->
+            <div class="bg-white rounded-lg shadow p-5 mb-6">
+                <h3 class="font-bold text-lg mb-4 text-primary">加价说明列表（一行一条）</h3>
+                <textarea id="noteTextarea" rows="5" class="w-full border p-3"></textarea>
+            </div>
+
+            <div class="flex gap-4 flex-wrap">
+                <button onclick="exportJson()" class="bg-primary text-white px-6 py-3 rounded">💾 导出 data.json 文件</button>
+                <button onclick="resetDefault()" class="bg-gray-500 text-white px-6 py-3 rounded">重置为原始数据</button>
+            </div>
+            <p class="mt-4 text-green-600 hidden" id="saveTip">✅ 文件已开始下载！上传文件到Github即可全网更新</p>
+        </div>
+    </div>
+
+    <script>
+        // 后台登录密码自行修改
+        const ADMIN_PASSWORD = "Zzy091500.";
+        const defaultData = {
+            updateTime: "2026-08-02",
+            B1: [
+                {"size":"2–9公分", "price":170},
+                {"size":"10公分–11公分", "price":180},
+                {"size":"12公分–13公分", "price":190},
+                {"size":"14公分–15公分", "price":200}
+            ],
+            B2: [
+                {"size":"2–3公分", "price":155},
+                {"size":"9公分", "price":160},
+                {"size":"10公分–11公分", "price":170},
+                {"size":"12公分–13公分", "price":180},
+                {"size":"14公分–15公分", "price":190}
+            ],
+            test: [
+                {"size":"2公分–8公分", "price":470},
+                {"size":"9公分", "price":480},
+                {"size":"10公分", "price":490},
+                {"size":"11公分", "price":500},
+                {"size":"12公分", "price":510},
+                {"size":"13公分", "price":520},
+                {"size":"14公分", "price":530},
+                {"size":"15公分", "price":540}
+            ],
+            extraNotes: [
+                "2公分标准厚度+15元",
+                "其他公分数标准厚度+10元",
+                "每公斤容重+10元",
+                "28公斤的+25元",
+                "检测35公斤+40元"
+            ]
+        };
+        let priceData = JSON.parse(JSON.stringify(defaultData));
+
+        // 登录逻辑
+        function login(){
+            const val = document.getElementById("pwdInput").value;
+            if(val === ADMIN_PASSWORD){
+                document.getElementById("loginBox").classList.add("hidden");
+                document.getElementById("adminPanel").classList.remove("hidden");
+                fillForm();
+            }else{
+                document.getElementById("errTip").classList.remove("hidden");
+            }
+        }
+        function logout(){
+            document.getElementById("adminPanel").classList.add("hidden");
+            document.getElementById("loginBox").classList.remove("hidden");
+        }
+
+        function fillForm(){
+            document.getElementById("inputUpdateTime").value = priceData.updateTime;
+            fillGroup("editB1", priceData.B1, "B1");
+            fillGroup("editB2", priceData.B2, "B2");
+            fillGroup("editTest", priceData.test, "test");
+            document.getElementById("noteTextarea").value = priceData.extraNotes.join("\n");
+        }
+
+        function fillGroup(domId, arr, key){
+            const wrap = document.getElementById(domId);
+            wrap.innerHTML = "";
+            arr.forEach((item,i)=>{
+                wrap.innerHTML += `
+                <div class="flex gap-2 items-center border p-2 rounded">
+                    <span class="w-36">${item.size}</span>
+                    <input type="number" class="flex-1 border px-2 py-1 price-input" data-group="${key}" data-index="${i}" value="${item.price}">
+                </div>`
+            })
+        }
+
+        // 读取表单数据
+        function readFormData(){
+            priceData.updateTime = document.getElementById("inputUpdateTime").value;
+            document.querySelectorAll(".price-input").forEach(input=>{
+                const g = input.dataset.group;
+                const idx = Number(input.dataset.index);
+                priceData[g][idx].price = Number(input.value);
+            })
+            priceData.extraNotes = document.getElementById("noteTextarea").value.split("\n").filter(s=>s.trim()!="");
+            return priceData;
+        }
+
+        // 导出json文件
+        function exportJson(){
+            const data = readFormData();
+            const content = JSON.stringify(data,null,2);
+            const blob = new Blob([content],{type:"application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "data.json";
+            a.click();
+            URL.revokeObjectURL(url);
+            document.getElementById("saveTip").classList.remove("hidden");
+            setTimeout(()=>document.getElementById("saveTip").classList.add("hidden"),4000);
+        }
+
+        function resetDefault(){
+            if(confirm("确认恢复原始价格数据？当前修改内容将会丢失")){
+                priceData = JSON.parse(JSON.stringify(defaultData));
+                fillForm();
+                alert("数据已重置");
+            }
+        }
+    </script>
+</body>
+</html>
