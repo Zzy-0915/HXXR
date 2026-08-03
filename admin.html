@@ -27,16 +27,23 @@
             .card-shadow {
                 box-shadow: 0 3px 14px 0 rgba(15, 58, 118, 0.1);
             }
+            .lock-scroll {
+                overflow:hidden !important;
+            }
         }
-        /* 登录遮罩 */
+        /* 登录遮罩 彻底修复铺满全屏 */
         .login-modal {
             position: fixed;
-            inset: 0;
+            top:0;
+            left:0;
+            width:100vw;
+            height:100vh;
             background: rgba(0,0,0,0.55);
             display:flex;
             justify-content:center;
             align-items:center;
             z-index:9999;
+            padding:16px;
         }
     </style>
 </head>
@@ -140,11 +147,15 @@ function loginCheck(){
     const errTip = document.getElementById("errorTip");
     if(val === ADMIN_PASSWORD){
         document.getElementById("loginBox").classList.add("hidden");
+        document.body.classList.remove("lock-scroll");
         document.getElementById("mainContainer").classList.remove("hidden");
     }else{
         errTip.classList.remove("hidden");
     }
 }
+// 页面打开直接锁定滚动，禁止底层滑动
+document.body.classList.add("lock-scroll");
+
 // 回车登录
 document.getElementById("passwordInput").addEventListener("keydown",e=>{
     if(e.key === "Enter") loginCheck();
