@@ -1,270 +1,189 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>后台 | 华夏鑫荣价格管理</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#0F3A76',
-                        secondary: '#235299',
-                        light: '#F3F7FC'
-                    },
-                    fontFamily: {
-                        sans: ['Microsoft YaHei', 'system-ui', 'sans-serif'],
-                    },
-                }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>价格表管理后台</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<script>
+tailwind.config = {
+    theme: {
+        extend: {
+            colors: {
+                primary: '#0F3A76',
+                light: '#F3F7FC'
             }
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .card-shadow {
-                box-shadow: 0 3px 14px 0 rgba(15, 58, 118, 0.1);
-            }
-        }
-        * {
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        input,textarea {
-            -webkit-user-select:text;
-            user-select:text;
-        }
-    </style>
+    }
+}
+</script>
+<style>
+textarea {white-space: pre;}
+/* 登录遮罩 */
+#loginMask{
+    position: fixed;
+    inset: 0;
+    background:rgba(0,0,0,0.6);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+}
+</style>
 </head>
-<body class="bg-light min-h-screen py-6 px-4">
-    <div class="max-w-7xl mx-auto">
+<body class="bg-light py-6 px-4">
 
-        <!-- 登录弹窗 -->
-        <div id="loginBox" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg card-shadow p-6 w-full max-w-sm">
-                <h2 class="text-xl font-bold text-primary text-center mb-4">后台密码验证</h2>
-                <input id="pwdInput" type="password" placeholder="请输入管理密码" class="w-full border rounded px-3 py-2 mb-4">
-                <p id="errTip" class="text-red-500 text-sm mb-3 hidden">密码错误，请重新输入</p>
-                <button onclick="checkPassword()" class="w-full bg-primary text-white py-2 rounded">登录进入后台</button>
-            </div>
+<!-- 登录弹窗 -->
+<div id="loginMask">
+    <div class="bg-white rounded-lg p-6 w-full max-w-sm shadow-lg">
+        <h2 class="text-xl font-bold text-primary mb-4 text-center">🔐 后台权限验证</h2>
+        <input id="pwdInput" type="password" placeholder="请输入访问密码" class="w-full border px-3 py-2 rounded mb-4">
+        <button onclick="checkPassword()" class="w-full bg-primary text-white py-2 rounded">确认登录</button>
+        <p class="text-red-500 text-sm mt-3 hidden text-center" id="pwdTip">密码错误，请重新输入</p>
+    </div>
+</div>
+
+<div class="max-w-5xl mx-auto bg-white rounded-lg shadow p-6 hidden" id="mainPanel">
+    <h1 class="text-2xl font-bold text-primary mb-4"><i class="fa fa-cog mr-2"></i>价格数据管理</h1>
+    <div class="mb-4">
+        <span class="text-gray-600">JSON文件地址：</span>
+        <code class="break-all text-sm">https://cdn.jsdelivr.net/gh/ghzzy17627871234@gmail.comHXXR/data.json</code>
+    </div>
+
+    <div class="space-y-4">
+        <div>
+            <label class="block font-semibold mb-1">最后更新日期（updateTime）</label>
+            <input class="w-full border px-3 py-2 rounded" id="updateTime">
         </div>
 
-        <!-- 后台主体内容（初始隐藏） -->
-        <div id="mainContent" class="hidden">
-            <header class="text-center mb-6">
-                <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-primary">
-                    <i class="fa fa-cog mr-2"></i>价格表后台管理系统
-                </h1>
-                <a href="./index.html" class="inline-block mt-3 text-primary underline">
-                    <i class="fa fa-arrow-left"></i> 返回价格表首页
-                </a>
-            </header>
-
-            <!-- 更新日期 -->
-            <div class="bg-white rounded-lg card-shadow p-5 mb-6">
-                <label class="font-bold text-primary block mb-2">最后更新日期</label>
-                <input id="updateTime" type="text" class="border px-3 py-2 w-full rounded" placeholder="例如：2026-08-02">
-            </div>
-
-            <!-- B1级 -->
-            <div class="bg-white rounded-lg card-shadow p-5 mb-6">
-                <h2 class="font-bold text-primary text-lg mb-3">B1级</h2>
-                <div id="boxB1"></div>
-                <button onclick="addRow('B1')" class="mt-3 bg-primary text-white px-4 py-2 rounded">
-                    <i class="fa fa-plus"></i> 添加规格
-                </button>
-            </div>
-
-            <!-- B2级 -->
-            <div class="bg-white rounded-lg card-shadow p-5 mb-6">
-                <h2 class="font-bold text-primary text-lg mb-3">B2级</h2>
-                <div id="boxB2"></div>
-                <button onclick="addRow('B2')" class="mt-3 bg-primary text-white px-4 py-2 rounded">
-                    <i class="fa fa-plus"></i> 添加规格
-                </button>
-            </div>
-
-            <!-- 检测级 -->
-            <div class="bg-white rounded-lg card-shadow p-5 mb-6">
-                <h2 class="font-bold text-primary text-lg mb-3">检测级</h2>
-                <div id="boxTest"></div>
-                <button onclick="addRow('test')" class="mt-3 bg-primary text-white px-4 py-2 rounded">
-                    <i class="fa fa-plus"></i> 添加规格
-                </button>
-            </div>
-
-            <!-- EPS聚苯系列 -->
-            <div class="bg-white rounded-lg card-shadow p-5 mb-6">
-                <h2 class="font-bold text-primary text-lg mb-3">EPS聚苯系列</h2>
-                <div id="boxEPS"></div>
-                <button onclick="addRow('EPS')" class="mt-3 bg-primary text-white px-4 py-2 rounded">
-                    <i class="fa fa-plus"></i> 添加产品
-                </button>
-            </div>
-
-            <!-- 加价说明 -->
-            <div class="bg-white rounded-lg card-shadow p-5 mb-6">
-                <h2 class="font-bold text-primary text-lg mb-3">加价补充说明（一行一条）</h2>
-                <textarea id="noteText" rows="5" class="w-full border rounded p-3"></textarea>
-            </div>
-
-            <!-- 操作按钮 -->
-            <div class="flex flex-wrap gap-4 mb-6">
-                <button onclick="generateJson()" class="bg-green-600 text-white px-5 py-3 rounded text-lg">
-                    <i class="fa fa-code"></i> 生成 data.json 内容
-                </button>
-                <button onclick="copyText()" class="bg-secondary text-white px-5 py-3 rounded text-lg">
-                    <i class="fa fa-copy"></i> 复制文本
-                </button>
-            </div>
-
-            <!-- 输出区域 -->
-            <div class="bg-white rounded-lg card-shadow p-5">
-                <h2 class="font-bold text-primary mb-3">data.json 输出内容</h2>
-                <textarea id="result" readonly rows="14" class="w-full border rounded p-3 bg-gray-50"></textarea>
-                <p class="text-sm text-orange-500 mt-2">
-                    ✅复制全部内容，上传覆盖Github里的data.json文件，网页自动刷新价格！
-                </p>
-            </div>
+        <!-- B1 -->
+        <div>
+            <label class="block font-semibold mb-1">B1级数据（每行：规格,价格）</label>
+            <textarea id="areaB1" rows="6" class="w-full border px-3 py-2 rounded"></textarea>
+        </div>
+        <!-- B2 -->
+        <div>
+            <label class="block font-semibold mb-1">B2级数据（每行：规格,价格）</label>
+            <textarea id="areaB2" rows="7" class="w-full border px-3 py-2 rounded"></textarea>
+        </div>
+        <!-- 检测级 -->
+        <div>
+            <label class="block font-semibold mb-1">检测级数据（每行：规格,价格）</label>
+            <textarea id="areaTest" rows="9" class="w-full border px-3 py-2 rounded"></textarea>
+        </div>
+        <!-- EPS聚苯 -->
+        <div>
+            <label class="block font-semibold mb-1">EPS聚苯系列（每行：名称,价格）</label>
+            <textarea id="areaEPS" rows="5" class="w-full border px-3 py-2 rounded"></textarea>
+        </div>
+        <!-- 保温砂浆【新增】 -->
+        <div>
+            <label class="block font-semibold mb-1">保温砂浆系列（每行：名称,价格）</label>
+            <textarea id="areaMortar" rows="7" class="w-full border px-3 py-2 rounded"></textarea>
+        </div>
+        <!-- 备注 -->
+        <div>
+            <label class="block font-semibold mb-1">加价说明（一行一条）</label>
+            <textarea id="areaNote" rows="6" class="w-full border px-3 py-2 rounded"></textarea>
         </div>
     </div>
 
-    <script>
-        // ==========在这里修改后台登录密码==========
-        const ADMIN_PASSWORD = "Zzy091500.";
-        // =========================================
+    <div class="flex flex-wrap gap-3 mt-6">
+        <button onclick="loadRemote()" class="bg-primary text-white px-4 py-2 rounded"><i class="fa fa-refresh"></i> 拉取线上数据</button>
+        <button onclick="buildJson()" class="bg-green-600 text-white px-4 py-2 rounded"><i class="fa fa-code"></i> 生成JSON文本</button>
+        <button onclick="copyResult()" class="bg-orange-500 text-white px-4 py-2 rounded"><i class="fa fa-copy"></i> 复制JSON</button>
+    </div>
 
-        // 密码校验
-        function checkPassword(){
-            const inputVal = document.getElementById('pwdInput').value.trim();
-            const errTip = document.getElementById("errTip");
-            if(inputVal === ADMIN_PASSWORD){
-                document.getElementById("loginBox").classList.add("hidden");
-                document.getElementById("mainContent").classList.remove("hidden");
-                renderAll();
-            }else{
-                errTip.classList.remove("hidden");
-            }
+    <div class="mt-6">
+        <label class="block font-semibold mb-1">生成结果（复制全部，覆盖github上的data.json）</label>
+        <textarea id="result" rows="16" readonly class="w-full border px-3 py-2 rounded bg-gray-50"></textarea>
+    </div>
+
+    <div class="mt-4 text-sm text-gray-500">
+        <p>操作流程：拉取线上数据 → 修改内容 → 生成JSON → 复制全部 → 去Github替换data.json并提交。</p>
+        <p class="text-red-500">⚠️ 更新github后，页面需要强制刷新才能看到最新价格！</p>
+        <a href="./index.html" class="text-primary underline mt-2 inline-block">← 返回价格表首页</a>
+    </div>
+</div>
+
+<script>
+// =========在这里修改后台访问密码=========
+const PASSWORD = "Zzy091500.";
+// ========================================
+
+function checkPassword(){
+    const input = document.getElementById("pwdInput").value.trim();
+    const tip = document.getElementById("pwdTip");
+    if(input === PASSWORD){
+        document.getElementById("loginMask").style.display = "none";
+        document.getElementById("mainPanel").classList.remove("hidden");
+    }else{
+        tip.classList.remove("hidden");
+    }
+}
+
+// 回车快速登录
+document.getElementById("pwdInput").addEventListener("keydown",e=>{
+    if(e.key === "Enter") checkPassword();
+})
+
+const DATA_URL = "https://cdn.jsdelivr.net/gh/ghzzy17627871234@gmail.comHXXR/data.json";
+let currentJson = null;
+
+// 文本数组转换
+function textToList(text){
+    const arr = [];
+    text.trim().split("\n").forEach(line=>{
+        const [size,price] = line.split(",");
+        if(size && price !== undefined){
+            arr.push({size:size.trim(), price:Number(price.trim())})
         }
+    })
+    return arr;
+}
+function listToText(list){
+    return list.map(item=>`${item.size},${item.price}`).join("\n");
+}
 
-        // 默认数据（和首页保持完全一致）
-        let data = {
-            updateTime: "2026-08-02",
-            B1: [
-                {"size":"2公分-9公分", "price":170},
-                {"size":"10公分-11公分", "price":180},
-                {"size":"12公分-13公分", "price":190},
-                {"size":"14公分-15公分", "price":200}
-            ],
-            B2: [
-                {"size":"2公分-3公分", "price":155},
-                {"size":"4公分-9公分", "price":160},
-                {"size":"10公分-11公分", "price":170},
-                {"size":"12公分-13公分", "price":180},
-                {"size":"14公分-15公分", "price":190}
-            ],
-            test: [
-                {"size":"2公分-8公分", "price":470},
-                {"size":"9公分", "price":480},
-                {"size":"10公分", "price":490},
-                {"size":"11公分", "price":500},
-                {"size":"12公分", "price":510},
-                {"size":"13公分", "price":520},
-                {"size":"14公分", "price":530},
-                {"size":"15公分", "price":540}
-            ],
-            EPS: [
-                {"size":"白聚苯板", "price":9.9},
-                {"size":"白聚苯坨", "price":9.7},
-                {"size":"石墨聚苯板", "price":11},
-                {"size":"石墨聚苯坨", "price":10.8}
-            ],
-            extraNotes: [
-                "2公分-5公分标准厚度+15元",
-                "其他公分数标准厚度+10元",
-                "28公斤+25元",
-                "其他每公斤容重+10元",
-                "检测35公斤+40元"
-            ]
-        };
+async function loadRemote(){
+    try{
+        const res = await fetch(DATA_URL+"?t="+Date.now());
+        const data = await res.json();
+        currentJson = data;
+        document.getElementById("updateTime").value = data.updateTime;
+        document.getElementById("areaB1").value = listToText(data.B1);
+        document.getElementById("areaB2").value = listToText(data.B2);
+        document.getElementById("areaTest").value = listToText(data.test);
+        document.getElementById("areaEPS").value = listToText(data.EPS);
+        document.getElementById("areaMortar").value = listToText(data.mortar);
+        document.getElementById("areaNote").value = data.extraNotes.join("\n");
+        alert("线上数据加载成功！");
+    }catch(e){
+        alert("拉取失败："+e.message);
+    }
+}
 
-        // 渲染输入框
-        function renderAll(){
-            document.getElementById("updateTime").value = data.updateTime;
-            document.getElementById("noteText").value = data.extraNotes.join("\n");
-            renderGroup("B1", "boxB1");
-            renderGroup("B2", "boxB2");
-            renderGroup("test", "boxTest");
-            renderGroup("EPS", "boxEPS");
-        }
+function buildJson(){
+    const obj = {
+        updateTime: document.getElementById("updateTime").value,
+        B1: textToList(document.getElementById("areaB1").value),
+        B2: textToList(document.getElementById("areaB2").value),
+        test: textToList(document.getElementById("areaTest").value),
+        EPS: textToList(document.getElementById("areaEPS").value),
+        mortar: textToList(document.getElementById("areaMortar").value),
+        extraNotes: document.getElementById("areaNote").value.trim().split("\n").map(s=>s.trim())
+    };
+    const str = JSON.stringify(obj,null,4);
+    document.getElementById("result").value = str;
+}
 
-        function renderGroup(key, boxId){
-            const wrap = document.getElementById(boxId);
-            wrap.innerHTML = "";
-            data[key].forEach((item,idx)=>{
-                wrap.innerHTML += `
-                <div class="flex gap-2 items-center mb-2">
-                    <input class="flex-1 border px-2 py-1 rounded size-input" data-group="${key}" data-index="${idx}" value="${item.size}" placeholder="名称/规格">
-                    <input class="w-24 border px-2 py-1 rounded price-input" data-group="${key}" data-index="${idx}" value="${item.price}" placeholder="价格">
-                    <button onclick="delRow('${key}',${idx})" class="bg-red-500 text-white px-2 py-1 rounded">删除</button>
-                </div>
-                `
-            })
-        }
-
-        // 添加一行
-        function addRow(groupKey){
-            data[groupKey].push({"size":"","price":""});
-            renderAll();
-        }
-        // 删除一行
-        function delRow(groupKey,idx){
-            data[groupKey].splice(idx,1);
-            renderAll();
-        }
-
-        // 读取页面所有输入框，组装json
-        function readForm(){
-            data.updateTime = document.getElementById("updateTime").value.trim();
-            data.extraNotes = document.getElementById("noteText").value.split("\n").map(s=>s.trim()).filter(s=>s);
-
-            // 清空重新读取
-            ["B1","B2","test","EPS"].forEach(group=>{
-                const list = [];
-                document.querySelectorAll(`.size-input[data-group="${group}"]`).forEach(input=>{
-                    const idx = input.dataset.index;
-                    const size = input.value.trim();
-                    const price = document.querySelector(`.price-input[data-group="${group}"][data-index="${idx}"]`).value;
-                    if(size){
-                        list.push({size, price:Number(price)});
-                    }
-                })
-                data[group] = list;
-            })
-        }
-
-        // 生成json文本
-        function generateJson(){
-            readForm();
-            const jsonStr = JSON.stringify(data,null,2);
-            document.getElementById("result").value = jsonStr;
-        }
-
-        // 一键复制
-        function copyText(){
-            const textarea = document.getElementById("result");
-            textarea.select();
-            document.execCommand("copy");
-            alert("✅已复制data.json内容！去Github粘贴覆盖文件");
-        }
-
-        // 回车快速登录
-        document.getElementById("pwdInput").addEventListener("keydown",function(e){
-            if(e.key === "Enter") checkPassword();
-        })
-    </script>
+function copyResult(){
+    const text = document.getElementById("result").value;
+    navigator.clipboard.writeText(text).then(()=>{
+        alert("JSON已复制！前往Github覆盖data.json");
+    })
+}
+</script>
 </body>
-</html>
 </html>
