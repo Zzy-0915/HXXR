@@ -47,7 +47,7 @@
             <p class="text-sm text-orange-500 mt-1" id="loadTip">正在获取最新价格数据</p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <!-- B1级 -->
             <div class="bg-white rounded-lg card-shadow overflow-hidden">
                 <div class="bg-primary text-white py-3.5 text-center font-bold text-lg">B1级</div>
@@ -87,7 +87,7 @@
                     <tbody id="tableTest"></tbody>
                 </table>
             </div>
-            <!-- EPS聚苯系列【新增】 -->
+            <!-- EPS聚苯系列 -->
             <div class="bg-white rounded-lg card-shadow overflow-hidden">
                 <div class="bg-primary text-white py-3.5 text-center font-bold text-lg">EPS聚苯系列</div>
                 <table class="w-full text-center">
@@ -98,6 +98,19 @@
                         </tr>
                     </thead>
                     <tbody id="tableEPS"></tbody>
+                </table>
+            </div>
+            <!-- 保温砂浆系列 -->
+            <div class="bg-white rounded-lg card-shadow overflow-hidden">
+                <div class="bg-primary text-white py-3.5 text-center font-bold text-lg">保温砂浆系列</div>
+                <table class="w-full text-center">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="py-3 border-b border-gray-200 w-3/5">产品名称</th>
+                            <th class="py-3 border-b border-gray-200 w-2/5">单价(元/吨)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableMortar"></tbody>
                 </table>
             </div>
         </div>
@@ -117,9 +130,7 @@
     </div>
 
     <script>
-        // =====================【重要：部署完成后修改这里的JSON地址】=====================
         const DATA_URL = "https://cdn.jsdelivr.net/gh/ghzzy17627871234@gmail.comHXXR/data.json";
-        // ==========================================================================
 
         const defaultData = {
             updateTime: "2026-08-02",
@@ -146,15 +157,22 @@
                 {"size":"14公分", "price":530},
                 {"size":"15公分", "price":540}
             ],
-            // 新增聚苯系列数据
             EPS: [
                 {"size":"白聚苯板", "price":9.9},
                 {"size":"白聚苯坨", "price":9.7},
                 {"size":"石墨聚苯板", "price":11},
                 {"size":"石墨聚苯坨", "price":10.8}
             ],
+            mortar: [
+                {"size":"抗裂砂浆/普通", "price":450},
+                {"size":"粘接砂浆/普通", "price":400},
+                {"size":"抗裂砂浆/中等", "price":650},
+                {"size":"粘接砂浆/中等", "price":600},
+                {"size":"抗裂砂浆/检测", "price":850},
+                {"size":"粘接砂浆/检测", "price":850}
+            ],
             extraNotes: [
-                "2-5公分标准厚度+15元",
+                "挤塑2-5公分标准厚度+15元",
                 "其他公分数标准厚度+10元",
                 "28公斤+25元",
                 "其他每公斤容重+10元",
@@ -179,7 +197,8 @@
             renderTable("tableB1", data.B1);
             renderTable("tableB2", data.B2);
             renderTable("tableTest", data.test);
-            renderTable("tableEPS", data.EPS); //渲染聚苯板块
+            renderTable("tableEPS", data.EPS);
+            renderTable("tableMortar", data.mortar);
 
             const noteWrap = document.getElementById('noteList');
             noteWrap.innerHTML = "";
@@ -188,7 +207,6 @@
             })
         }
 
-        // 远程加载数据，防止缓存
         fetch(DATA_URL + "?t=" + Date.now())
             .then(res=>res.json())
             .then(json=>{
