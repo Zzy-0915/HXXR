@@ -1,5 +1,5 @@
 {
-  "updateTime": "2026-08-19",
+  "updateTime": "2026-09-03",
   "B1": [
     {
       "size": "2公分-9公分",
@@ -77,19 +77,19 @@
   "EPS": [
     {
       "size": "白聚苯板",
-      "price": 9.8
+      "price": 10
     },
     {
       "size": "白聚苯坨",
-      "price": 9.6
+      "price": 9.8
     },
     {
       "size": "石墨聚苯板",
-      "price": 11
+      "price": 11.2
     },
     {
       "size": "石墨聚苯坨",
-      "price": 10.8
+      "price": 11
     }
   ],
   "mortar": [
