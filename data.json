@@ -1,21 +1,21 @@
 {
-  "updateTime": "2026-09-12",
+  "updateTime": "2026-10-1",
   "B1": [
     {
       "size": "2公分-9公分",
-      "price": 170
+      "price": 165
     },
     {
       "size": "10公分-11公分",
-      "price": 180
+      "price": 175
     },
     {
       "size": "12公分-13公分",
-      "price": 190
+      "price": 185
     },
     {
       "size": "14公分-15公分",
-      "price": 200
+      "price": 195
     }
   ],
   "B2": [
@@ -77,19 +77,19 @@
   "EPS": [
     {
       "size": "白聚苯板",
-      "price": 11.2
+      "price": 11.4
     },
     {
       "size": "白聚苯坨",
-      "price": 11
+      "price": 11.2
     },
     {
       "size": "石墨聚苯板",
-      "price": 11.8
+      "price": 12.2
     },
     {
       "size": "石墨聚苯坨",
-      "price": 11.6
+      "price": 12
     }
   ],
   "mortar": [
