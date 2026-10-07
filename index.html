@@ -216,7 +216,7 @@
             .catch(err=>{
                 console.log("远程数据加载失败，使用本地默认数据",err);
                 renderPage(defaultData);
-                document.getElementById("loadTip").innerText = "⚠️ 无法连接服务器，显示内置默认价格";
+                document.getElementById("loadTip").innerText = "";
             })
     </script>
 </body>
